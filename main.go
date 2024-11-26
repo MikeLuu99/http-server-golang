@@ -13,7 +13,9 @@ import (
 const portNumOne = ":2222"
 const portNumTwo = ":4444"
 
-const serverAddress = "localhost"
+type serverAddressType string
+
+const serverAddress serverAddressType = "localhost"
 
 func home(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
