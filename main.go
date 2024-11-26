@@ -9,6 +9,9 @@ import (
 	"net/http"
 )
 
+const portNumOne = ":2222"
+const portNumTwo = ":4444"
+
 const serverAddress = "localhost"
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +34,7 @@ func about(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	log.Println("Listening on port 3333")
+	log.Println("Listening on ports", portNumOne, portNumTwo)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
@@ -39,7 +42,7 @@ func main() {
 
 	ctx := context.Background()
 	serverOne := &http.Server{
-		Addr:    ":3333",
+		Addr:    portNumOne,
 		Handler: mux,
 		BaseContext: func(l net.Listener) context.Context {
 			ctx = context.WithValue(ctx, serverAddress, l.Addr().String())
@@ -47,10 +50,32 @@ func main() {
 		},
 	}
 
-	err := serverOne.ListenAndServe()
-	if errors.Is(err, http.ErrServerClosed) {
-		log.Println("Server closed under request")
-	} else if err != nil {
-		log.Fatal(err)
+	serverTwo := &http.Server{
+		Addr:    portNumTwo,
+		Handler: mux,
+		BaseContext: func(l net.Listener) context.Context {
+			ctx = context.WithValue(ctx, serverAddress, l.Addr().String())
+			return ctx
+		},
 	}
+
+	go func() {
+		err := serverOne.ListenAndServe()
+		if errors.Is(err, http.ErrServerClosed) {
+			log.Println("Server closed under request")
+		} else if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	go func() {
+		err := serverTwo.ListenAndServe()
+		if errors.Is(err, http.ErrServerClosed) {
+			log.Println("Server closed under request")
+		} else if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	<-ctx.Done()
 }
