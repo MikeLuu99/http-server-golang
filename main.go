@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -22,14 +23,34 @@ func home(w http.ResponseWriter, r *http.Request) {
 	hasSecond := r.URL.Query().Has("second")
 	second := r.URL.Query().Get("second")
 
-	log.Printf("%sgot / request first(%t):%s second(%t):%s ", ctx.Value(serverAddress), hasFirst, first, hasSecond, second)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf("%sgot / request first(%t):%s second(%t):%s \nbody:%s",
+		ctx.Value(serverAddress),
+		hasFirst,
+		first,
+		hasSecond,
+		second,
+		body)
 	fmt.Fprintf(w, "Home Page")
 }
 
 func about(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	log.Println("request to about", ctx.Value(serverAddress))
+	myName := r.PostFormValue("myName")
+	if myName == "" {
+		w.Header().Set("x-missing-name", "true")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else {
+		w.Header().Set("x-missing-name", "false")
+		w.WriteHeader(http.StatusOK)
+		log.Printf("%s got /about request \n Hi %s", ctx.Value(serverAddress), myName)
+	}
 	fmt.Fprintf(w, "About Page")
 }
 
