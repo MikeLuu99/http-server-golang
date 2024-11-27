@@ -56,12 +56,23 @@ func about(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "About Page")
 }
 
+func handleGet(w http.ResponseWriter, r *http.Request) {
+	// Set response headers
+	w.Header().Set("Content-Type", "text/plain")
+
+	response := fmt.Sprintf("Request Method: %s\nMessage: Hello from the server!", r.Method)
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(response))
+}
+
 func main() {
 	log.Println("Listening on ports", portNumOne, portNumTwo)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/about", about)
+	mux.HandleFunc("/get", handleGet)
 
 	ctx := context.Background()
 	serverOne := &http.Server{
