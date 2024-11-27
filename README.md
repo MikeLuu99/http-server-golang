@@ -1,8 +1,6 @@
+# HTTP Server in Go
 
-
-# Quote Server Repository
-
-This repository contains a simple quote server written in Go. The server provides a RESTful API for retrieving and adding quotes.
+This repository contains a simple http server written in Go. The server provides a RESTful API for retrieving and adding quotes to local json file.
 
 ## Features
 
